@@ -4,14 +4,14 @@ import org.jxmapviewer.viewer.GeoPosition;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.Objects;
+
 public class ProcessingPlant extends DefaultWaypoint {
 
     private final JPanel plant;
-    private ArrayList<Point> members;
-    private GeoPosition coord;
+    private final GeoPosition coord;
 
-    private Color color;
+    private final Color color;
 
     public ProcessingPlant(Color color, GeoPosition coord) {
         super(coord);
@@ -23,7 +23,6 @@ public class ProcessingPlant extends DefaultWaypoint {
         plant.setSize(30, 30);
         plant.setPreferredSize(new Dimension(30, 30));
         plant.setVisible(true);
-        members = new ArrayList<>();
     }
 
     public Color getColor() {
@@ -34,49 +33,9 @@ public class ProcessingPlant extends DefaultWaypoint {
         return plant;
     }
 
-    public void setSize(int width, int height) {
-        plant.setSize(width, height);
-        plant.setPreferredSize(new Dimension(width, height));
-    }
-
-    public void addMember(Point p) {
-        members.add(p);
-    }
-
-    public void clearMembers() {
-        members.clear();
-    }
-
-    public void updatePosition() {
-        if (members.size() == 0) {
-            return;
-        }
-        double sumLat = 0;
-        double sumLon = 0;
-        for (Point p : members) {
-            sumLat += p.getLa();
-            sumLon += p.getLo();
-        }
-        double newLat = sumLat / members.size();
-        double newLon = sumLon / members.size();
-        coord = new GeoPosition(newLat, newLon);
-        setPosition(coord);
-    }
-
-    public double distTo(Point p) {
-        double latDiff = coord.getLatitude() - p.getLa();
-        double lonDiff = coord.getLongitude() - p.getLo();
-        return Math.sqrt(Math.pow(latDiff, 2) + Math.pow(lonDiff, 2));
-    }
-
     @Override
     public void setPosition(GeoPosition coordinate) {
         super.setPosition(coordinate);
-    }
-
-    @Override
-    public GeoPosition getPosition() {
-        return super.getPosition();
     }
 
     public double getLa() {
@@ -85,5 +44,20 @@ public class ProcessingPlant extends DefaultWaypoint {
 
     public double getLo() {
         return super.getPosition().getLongitude();
+    }
+
+    // the following 2 methods will tell all collections (sets, maps, lists, etc.) that if there are 2
+    //  accumulations sites, they are the same if only this.coord is the same
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ProcessingPlant that = (ProcessingPlant) o;
+        return Objects.equals(coord, that.coord);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(coord);
     }
 }

@@ -5,18 +5,14 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Collections;
 import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class PointGenerator {
 
-    private ArrayList<Point> points = new ArrayList<>();
+    private final ArrayList<Point> points = new ArrayList<>();
 
-
-
-    public PointGenerator(int k) {
-
+    public PointGenerator(Random random, int clusterCount) {
         String json = null;
         try {
             byte[] jsonData = Files.readAllBytes(Paths.get("src/main/resources/germany.json"));
@@ -26,10 +22,19 @@ public class PointGenerator {
         }
 
         Gson gson = new Gson();
-        ArrayList<Point> allPoints = new ArrayList<Point>(Arrays.asList(gson.fromJson(json, Point[].class)));
+        ArrayList<Point> allPoints = new ArrayList<>(Arrays.asList(gson.fromJson(json, Point[].class)));
 
-        for(int i = 0; i < k; i++) {
-            Random random = new Random();
+        Collections.shuffle(allPoints, random);
+
+        // if clusterCount is less than there are points, add only clusterCount points to the list
+        //  if clusterCount is more than there are points, add all points to the list
+        for(int i = 0; i < Math.min(clusterCount, allPoints.size()); i++) {
+            points.add(allPoints.get(i));
+        }
+
+        // this loop can only run when clusterCount is more than there are points
+        //  randomly add points from the allPoints list to the list
+        for (int i = 0; i < Math.max(0, clusterCount - allPoints.size()); i++) {
             points.add(allPoints.get(random.nextInt(allPoints.size())));
         }
     }
